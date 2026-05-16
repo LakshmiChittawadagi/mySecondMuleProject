@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="fa675ded-789d-4b22-a702-d7a2978a68fb" responseStreamingMode="AUTO" outputMimeType="" primaryNodeOnly="false" path="" outputEncoding="" config-ref="HTTP_Listener_config" allowedMethods="">
+		<http:listener-connection host="0.0.0.0" port="8088" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="0319611b-3cbf-4b3c-afb7-0af4568cad3d" >
+		<db:my-sql-connection host="127.0.0.1" port="3306" user="root" password="Deptcse@123" database="hospital" />
+	</db:config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="df05a76f-48c1-4a02-87fd-7818df275a37" >
+		<file:connection />
+	</file:config>
+	<flow name="demoprojectFlow" doc:id="6e8a7a91-0d15-439c-bfdd-23a7b57591ec" >
+		<http:listener doc:name="Listener" doc:id="2195ff74-84a0-423c-aa35-a0947ac2a29b" config-ref="HTTP_Listener_config" path="/Api"/>
+		<logger level="INFO" doc:name="Logger1" doc:id="3eea09b7-cf29-4f79-8c1c-ca6b85570c84" message='#["logger1...."]'/>
+		<flow-ref doc:name="Flow Reference1" doc:id="9eb5c535-e308-4196-a262-1396b390bf31" name="demoprojectSub_Flow"/>
+		<logger level="INFO" doc:name="Logger3" doc:id="96c6ef64-abd2-4056-913d-cc5426596a58" message='#["logger3........."]'/>
+		<flow-ref doc:name="Flow Reference" doc:id="8231703f-2497-4fe2-a847-62c34a123436" name="demoprojectSub_Flow"/>
+		<logger level="INFO" doc:name="Logger4" doc:id="b40067d1-112e-4cd8-bd08-3524e03e00f5" message='#["logger4......"]'/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="2d9c1b77-0d08-46be-b849-39884a1d082b" type="ANY">
+				<logger level="INFO" doc:name="Logger5" doc:id="ce4156fd-077d-4f00-93b2-fca54505f3eb" message='#["logger5..."]'/>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<sub-flow name="demoprojectSub_Flow" doc:id="1ae84233-dcf3-450a-821f-a223d742e21f" >
+		<try doc:name="Try" doc:id="9e11258c-b139-4afc-afb1-727351a97691" >
+			<logger level="INFO" doc:name="Logger2" doc:id="9b034672-052a-400e-b3e0-e236662d3962" message='#["logger2..."]'/>
+			<logger level="INFO" doc:name="Logger6" doc:id="a5904ac5-b267-42f4-8772-51d9c044aa7d" message='#[%dw 2.0&#10;output application/json&#10;---&#10;payload.name.toUpper()]' />
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="931dc045-4b4a-48a9-a4c1-33c27ee6d6b6" type="ANY">
+					<logger level="INFO" doc:name="Logger5" doc:id="28e300d1-45cc-4200-82bd-a74ba55e0d67" message='#["logger5"]'/>
+				</on-error-continue>
+			</error-handler>
+		</try>
+	</sub-flow>
+	<flow name="demoprojectFlow1" doc:id="afa7ff42-4818-43db-8a80-6cda8bdc8d27" >
+		<scheduler doc:name="Scheduler_timer" doc:id="f4e6dd5e-618e-4617-bf4b-84dc0062fb1b" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="10" timeUnit="SECONDS" />
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="Logger" doc:id="208fe9c0-cfaa-4bd4-94e0-af8ff66ce78b" message="----------------------scheduler time------------------" />
+		<set-payload value='#[[1,2,3,"a",4,"b",5, "c",6]]' doc:name='[1,2,3,"a",4,"b",5]' doc:id="849f9289-ea44-4e5b-aeaa-c2fdac9cc5f6" />
+		<batch:job jobName="demoprojectBatch_Job" doc:id="aca4178e-85c0-4f30-b6c4-4d53f0195765" maxFailedRecords="10">
+			<batch:process-records >
+				<batch:step name="Batch_Step" doc:id="f3009d90-5ba7-406e-b839-0dce24afd41f" acceptPolicy="ALL">
+					<set-payload value="#[payload * 10]" doc:name="payload*10" doc:id="72b43a16-37de-4c14-817c-2a1290f8c1f3" />
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="a9f417a4-25fe-48f9-a704-843bf44f588d" size="2">
+						<logger level="INFO" doc:name="Logger" doc:id="78bc7592-dd90-45b5-973f-c472126a5d65" message='#[payload]'/>
+					</batch:aggregator>
+				</batch:step>
+				<batch:step name="Batch_Step1" doc:id="458b6914-d737-4297-9f6c-fb00080ff8d0" acceptPolicy="ALL">
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="f179d745-2e47-4afd-a2ff-049e20979789" size="2">
+						<logger level="INFO" doc:name="Logger" doc:id="2029133d-c754-41f0-9796-b4bbb5a87f0e" message="#[payload]"/>
+					</batch:aggregator>
+					<!-- [STUDIO:"Logger"]<logger level="INFO" doc:name="Logger" doc:id="bb1f0115-9203-4f33-932e-291ba773bc72" message="#[payload&#93;"/> [STUDIO] -->
+					<set-payload value="#[payload * 5]" doc:name="payload * 5" doc:id="544bcf65-3cf4-430e-86d8-8d61bcd42582" />
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete>
+				<logger level="INFO" doc:name="Logger" doc:id="6587acc5-d737-41ad-9702-cb40e2d0c1d1" message="#[vars.batchJobInstance.totalRecords]"/>
+				<logger level="INFO" doc:name="Logger" doc:id="c39edd27-7cc4-44ad-b09c-128fe963b01f" message="#[vars.batchJobInstance.successfulRecords]"/>
+				<logger level="INFO" doc:name="Logger" doc:id="76fbedcf-7854-44fa-9671-e8a645839713" message="#[vars.batchJobInstance.failedRecords]"/>
+
+    </batch:on-complete>
+
+		</batch:job>
+	</flow>
+	<!-- [STUDIO:"demoprojectFlow2"]<flow name="demoprojectFlow2" doc:id="2cecba5c-c5b7-4e33-91a3-4c5f47599191" >
+		<scheduler doc:name="Scheduler_timer" doc:id="f64d6392-2e10-4e9d-8137-1d0580d1569b" >
+			<scheduling-strategy >
+				<cron expression="0 * * * * ?" />
+			</scheduling-strategy>
+		</scheduler>
+	</flow> [STUDIO] -->
+	<flow name="demoprojectFlow2" doc:id="e02dc0a1-9e4c-4808-bc4a-ac2e0c6d3491" >
+		<db:select doc:name="Select" doc:id="b78847cf-9c3a-4917-ab8f-d51b3c089610" config-ref="Database_Config" >
+			<db:sql ><![CDATA[SELECT * FROM patient;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[%dw 2.0
+output application/json
+---
+{
+    pageSize: (attributes.queryParams.size default 5) as Number,
+    
+    // This logic ensures:
+    // Page 1 -> (1-1) * 5 = 0 (Starts at record 1)
+    // Page 2 -> (2-1) * 5 = 5 (Starts at record 6)
+    offset: ((attributes.queryParams.page default 1 as Number) - 1) * (attributes.queryParams.size default 5 as Number)
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="a987fa81-3636-4fca-a3de-c087f0e1ab57" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="c9ed870f-c7ad-40bd-a816-80e5b6e9c91f" >
+			<when expression="#[sizeOf(payload) &gt; 0]">
+				<ee:transform doc:name="Transform Message" doc:id="5240b110-34d6-4a00-85e7-c3c7d039505c" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<set-variable value="#[404]" doc:name="Set Variable" doc:id="49a622bc-879d-44cd-b581-890e3ebf7995" variableName="httpStatus"/>
+				<set-payload value='#["Not found"]' doc:name="Set Payload" doc:id="54e6a867-a4b4-4763-9bb6-956762e52d03" />
+			</otherwise>
+		</choice>
+		<error-handler ref="globalError_Handler" />
+	</flow>
+	<flow name="demoprojectFlow3" doc:id="81cf792f-42cd-4e73-828a-1954b0cb8658" >
+		<http:listener doc:name="Listener" doc:id="738064d8-51b8-4d0f-ba2b-97e99e0f43fe" config-ref="HTTP_Listener_config" path="/alters"/>
+		<db:select doc:name="Select" doc:id="c49e1c0c-489c-4ae0-8927-279eea8ae09c" config-ref="Database_Config" >
+			<db:sql ><![CDATA[SELECT * FROM patient;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[%dw 2.0
+output application/json
+---
+{
+    pageSize: (attributes.queryParams.size default 5) as Number,
+    
+    // This logic ensures:
+    // Page 1 -> (1-1) * 5 = 0 (Starts at record 1)
+    // Page 2 -> (2-1) * 5 = 5 (Starts at record 6)
+    offset: ((attributes.queryParams.page default 1 as Number) - 1) * (attributes.queryParams.size default 5 as Number)
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="2a16101f-a1dd-4606-9fd2-03e084da0a43" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="demoprojectFlow4" doc:id="88ee5bd4-2aad-4e56-9d2a-14af87d46c1d" >
+		<file:listener doc:name="On New or Updated File" doc:id="ac8dce6c-7913-46e9-a80f-44051394388e" config-ref="File_Config" directory="D:\Fileconnector\On-new or updated\On-New or Updated.txt">
+			<scheduling-strategy >
+				<fixed-frequency frequency="10" timeUnit="SECONDS"/>
+			</scheduling-strategy>
+		</file:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="aa6f6b92-43ea-4d59-8a98-517f2c4d627e" message="#[payload]"/>
+	</flow>
+</mule>
